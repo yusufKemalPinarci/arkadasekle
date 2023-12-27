@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "524284636505",
+    "project_id": "arkadasekle-b9629",
+    "storage_bucket": "arkadasekle-b9629.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:524284636505:android:b18bb3119c4e0bc5cab048",
+        "android_client_info": {
+          "package_name": "com.yusuf.arkadasekle"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "524284636505-67sdbpa1k6atoaf3vq7kfgt9bbu4qqrn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.yusuf.arkadasekle",
+            "certificate_hash": "2b2e0c4b5fa3b8ab0ea7cfd4d89c8719ba6b96b6"
+          }
+        },
+        {
+          "client_id": "524284636505-usmis3b4s74gp2nspisqru025rs31jev.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGkXF3DEh-EEXImwTnCGp6Pjo0keqx84I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "524284636505-usmis3b4s74gp2nspisqru025rs31jev.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
