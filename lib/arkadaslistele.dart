@@ -22,6 +22,9 @@ class _ArkadasListeleState extends State<ArkadasListele> {
     getArkadasListesi();
   }
 
+
+
+
   Future<void> getArkadasListesi() async {
     DocumentSnapshot userSnapshot =
     await _firestore.collection('users').doc(userId).get();
@@ -30,6 +33,7 @@ class _ArkadasListeleState extends State<ArkadasListele> {
       arkadaslar = arkadaslarList.cast<String>();
     });
   }
+
 
   Future<void> removeFriend(String friendId) async {
     DocumentReference userRef = _firestore.collection('users').doc(userId);
@@ -116,6 +120,8 @@ class _ArkadasListeleState extends State<ArkadasListele> {
           itemCount: arkadaslar.length,
           itemBuilder: (context, index) {
             String arkadasId = arkadaslar[index];
+            print(arkadasId);
+
                 return FutureBuilder<DocumentSnapshot>(
                   future:
                   _firestore.collection('users').doc(arkadasId).get(),

@@ -63,7 +63,9 @@ class _BaskaProfilState extends State<BaskaProfil> {
 
       if (yorumlarSnapshot.docs.isNotEmpty) {
         setState(() {
-          yorumlar = yorumlarSnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+          yorumlar = yorumlarSnapshot.docs
+              .map((doc) => doc.data() as Map<String, dynamic>)
+              .toList();
         });
       } else {
         print('Yorumlar bulunamadı: ${widget.arkadasId}');
@@ -73,20 +75,19 @@ class _BaskaProfilState extends State<BaskaProfil> {
     }
   }
 
-
-
   yorumEkle(String yorum, String? yazanId) async {
     CollectionReference userSnapshot = await FirebaseFirestore.instance
         .collection("users")
-        .doc(widget.arkadasId).collection("yorumlar");
+        .doc(widget.arkadasId)
+        .collection("yorumlar");
 
-      setState(() {
-        Map<String, dynamic> yeniYorum = {
-          'yorum': yorum,
-          'yazan': yazanId,
-        };
-        userSnapshot.add(yeniYorum);
-      });
+    setState(() {
+      Map<String, dynamic> yeniYorum = {
+        'yorum': yorum,
+        'yazan': yazanId,
+      };
+      userSnapshot.add(yeniYorum);
+    });
   }
 
   @override
@@ -100,48 +101,54 @@ class _BaskaProfilState extends State<BaskaProfil> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(actions: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => MesajPage(arkadasId: widget.arkadasId, ArkadasIsim: widget.ArkadasIsim)
-              ),
-            );
-
-          }, child: Icon(Icons.message)),
-        ),
-      ],
+      appBar: AppBar(
+          actions: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => MesajPage(
+                              arkadasId: widget.arkadasId,
+                              ArkadasIsim: widget.ArkadasIsim)),
+                    );
+                  },
+                  child: Icon(Icons.message)),
+            ),
+          ],
           title: NormalText(
-        labelText: widget.ArkadasIsim,
-      )),
+            labelText: widget.ArkadasIsim,
+          )),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
+          Container(
+            color: Colors.pinkAccent,
+            child: Row(
               children: [
                 Center(
-                  child: SizedBox(
-                    height: 100,
-                    width: 100,
-                    child: InkWell(
-                      onTap: () {},
-                      child: profilResmi != ""
-                          ? ClipOval(
-                              child: Image.network(
-                                profilResmi,
-                                fit: BoxFit.cover,
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: SizedBox(
+                      height: 100,
+                      width: 100,
+                      child: InkWell(
+                        onTap: () {},
+                        child: profilResmi != ""
+                            ? ClipOval(
+                                child: Image.network(
+                                  profilResmi,
+                                  fit: BoxFit.cover,
+                                ),
+                              )
+                            : CircleAvatar(
+                                child: Icon(
+                                  Icons.person,
+                                  size: 20,
+                                ),
                               ),
-                            )
-                          : CircleAvatar(
-                              child: Icon(
-                                Icons.person,
-                                size: 20,
-                              ),
-                            ),
+                      ),
                     ),
                   ),
                 ),
@@ -151,41 +158,39 @@ class _BaskaProfilState extends State<BaskaProfil> {
                       ? NormalText(labelText: widget.ArkadasIsim)
                       : CircularProgressIndicator(),
                 ),
+                Spacer(),
+                ElevatedButton(onPressed: (){
+
+                }, child: Icon(Icons.person_add)),Spacer()
               ],
             ),
           ),
+
           if (!hesapGizli)
             Expanded(
               flex: 5,
               child: GridView.builder(
+                shrinkWrap: true,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 0,
-                  mainAxisSpacing: 10,
+                  childAspectRatio: 0.7,
+                  crossAxisCount: 3,
                 ),
                 itemCount: resimler.length,
                 itemBuilder: (BuildContext context, int index) {
                   final reversedIndex = resimler.length - 1 - index;
                   final resimUrl = resimler[reversedIndex];
-
-                  return GestureDetector(
+                  return InkWell(
                     onLongPress: () {},
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: SizedBox(
-                        width: 300,
-                        height: 300,
-                        child: resimUrl != ""
-                            ? Image.network(resimUrl)
-                            : CircularProgressIndicator(),
-                      ),
-                    ),
+                    child: resimUrl != ""
+                        ? Image.network(resimUrl)
+                        : CircularProgressIndicator(),
                   );
                 },
               ),
-            ),if (hesapGizli)
-            Expanded(flex: 5,child: NormalText(labelText: "Bu hesap Gizli")),
-            Expanded(
+            ),
+          if (hesapGizli)
+            Expanded(flex: 5, child: NormalText(labelText: "Bu hesap Gizli")),
+          Expanded(
             flex: 1,
             child: GestureDetector(
               child: Card(
@@ -193,7 +198,7 @@ class _BaskaProfilState extends State<BaskaProfil> {
                   padding: const EdgeInsets.all(20.0),
                   child: Row(children: [
                     InkWell(
-                      onTap: () async{
+                      onTap: () async {
                         await getYorumlar();
                         Navigator.push(
                           context,
@@ -205,53 +210,49 @@ class _BaskaProfilState extends State<BaskaProfil> {
                       child: NormalText(labelText: "Yorumlar"),
                     ),
                     Spacer(),
-                    if(!hesapGizli)
-                    IconButton(
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return AlertDialog(
-                                title: Text("Yorum ekle"),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    TextYorumYazma(
-                                      labelText: 'Yorum Yazınız',
-                                    ),
-                                    TextButton(
-                                      onPressed: () async{
-                                        print("yarra");
+                    if (!hesapGizli)
+                      IconButton(
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text("Yorum ekle"),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      TextYorumYazma(
+                                        labelText: 'Yorum Yazınız',
+                                      ),
+                                      TextButton(
+                                        onPressed: () async {
 
 
                                           await yorumEkle(
                                               yorumController.text, userId);
                                           yorumController.text = " ";
 
-
-                                        Navigator.pop(
-                                            context); // Close the dialog after adding the comment
-                                      },
-                                      child: Text("Yorum Ekle"),
-                                    )
-                                  ],
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        icon: Icon(Icons.add))
+                                          Navigator.pop(
+                                              context); // Close the dialog after adding the comment
+                                        },
+                                        child: Text("Yorum Ekle"),
+                                      )
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          icon: Icon(Icons.add))
                   ]),
                 ),
               ),
             ),
           ),
-
         ],
       ),
     );
   }
 }
-
-

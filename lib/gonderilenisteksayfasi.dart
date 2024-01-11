@@ -44,15 +44,21 @@ class _GonderilenIstekSayfasiState extends State<GonderilenIstekSayfasi> {
   Future<void> ArkadasIstekGonderKaldir(String friendId) async {
     final FirebaseFirestore _firestore = FirebaseFirestore.instance;
     DocumentReference userRef = _firestore.collection('users').doc(userId);
+    DocumentReference userRef2 = _firestore.collection('users').doc(friendId);
     // Mevcut arkadaşlar listesini al
     DocumentSnapshot userSnapshot = await userRef.get();
+    DocumentSnapshot userSnapshot2 = await userRef2.get();
     List<dynamic> currentFriends = userSnapshot['GonderilenIstek'];
+    List<dynamic> currentFriends2 = userSnapshot2['arkadasIstekleri'];
 
     // İlgili arkadaşı kaldır
     currentFriends.remove(friendId);
+    currentFriends2.remove(userId);
 
     // Güncellenmiş arkadaşlar listesini Firestore'a yaz
     await userRef.update({'GonderilenIstek': currentFriends});
+    await userRef2.update({'arkadasIstekleri': currentFriends2});
+
   }
 
   @override

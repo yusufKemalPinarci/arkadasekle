@@ -34,15 +34,15 @@ class _ArkadasIstekleriSayfasiState extends State<ArkadasIstekleriSayfasi> {
     DocumentReference userRef2 = _firestore.collection('users').doc(friendId);
     // Mevcut arkadaşlar listesini al
     DocumentSnapshot userSnapshot = await userRef.get();
-    DocumentSnapshot userSnapshot2 = await userRef.get();
-    List<dynamic> currentFriends = userSnapshot['arkadasIstekleri'];
-    List<dynamic> currentFriends2 = userSnapshot['GonderilenIstek'];
+    DocumentSnapshot userSnapshot2 = await userRef2.get();
+    List<dynamic> currentFriends = userSnapshot['GonderilenIstek'];
+    List<dynamic> currentFriends2 = userSnapshot2['arkadasIstekleri'];
 
     // İlgili arkadaşı kaldır
     currentFriends.remove(friendId);
-    currentFriends2.remove(friendId);
-    await userRef.update({'arkadasIstekleri': currentFriends});
+    currentFriends2.remove(userId);
     await userRef.update({'GonderilenIstek': currentFriends});
+    await userRef2.update({'arkadasIstekleri': currentFriends2});
   }
 
   @override
@@ -64,6 +64,8 @@ class _ArkadasIstekleriSayfasiState extends State<ArkadasIstekleriSayfasi> {
           itemCount: arkadaslar.length,
           itemBuilder: (context, index) {
             String arkadasId = arkadaslar[index];
+
+
             return FutureBuilder<DocumentSnapshot>(
               future: _firestore.collection('users').doc(arkadasId).get(),
               builder: (context, snapshot) {

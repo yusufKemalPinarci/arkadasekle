@@ -33,14 +33,11 @@ class FeedPage extends StatelessWidget {
               String profilResmi = userSnapshot['imageUrl'] ?? '';
               List<dynamic> resimler = userSnapshot['resimler'] ?? [];
               bool hesapGizli = userSnapshot['hesapGizli'] ?? false;
-
               if (resimler.isEmpty || hesapGizli) {
                 // Skip rendering content for users with no images or private accounts
                 return Container();
               }
-
               List<Widget> userWidgets = [];
-
               for (int i = 0; i < resimler.length; i++) {
                 userWidgets.add(
                   Container(
@@ -86,7 +83,6 @@ class FeedPage extends StatelessWidget {
                   ),
                 );
               }
-
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: userWidgets,

@@ -1,8 +1,10 @@
 import 'package:arkadasekle/girispage.dart';
+import 'package:arkadasekle/ui/pages/home_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'akis.dart';
+import 'deneme.dart';
 import 'firebase_api.dart';
 import 'kayitpage.dart';
 
@@ -17,6 +19,9 @@ void main() async {
     userId = await FirebaseAuth.instance.currentUser!.uid;
     await FirebaseApi().initNotifications();
   }
+
+ GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 
 
   runApp(MyApp(initialRoute: user == null ? '/giris' : '/anasayfa'));
@@ -40,7 +45,7 @@ class MyApp extends StatelessWidget {
       initialRoute: initialRoute,
       routes: {
         '/giris': (context) => GirisSayfasi(),
-        '/anasayfa': (context) => FeedPage(),
+        '/anasayfa': (context) => HomePage(),
       },
     );
   }

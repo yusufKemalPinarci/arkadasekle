@@ -16,8 +16,8 @@ TextEditingController emailController = TextEditingController();
 TextEditingController sifreController = TextEditingController();
 TextEditingController yorumController = TextEditingController();
 
-ButtonStyle butonstyle = ElevatedButton.styleFrom(minimumSize:Size(100,50),maximumSize: Size(110,100));
-
+ButtonStyle butonstyle = ElevatedButton.styleFrom(
+    minimumSize: Size(100, 50), maximumSize: Size(110, 100));
 
 class TextisimYazma extends StatelessWidget {
   TextisimYazma({
@@ -85,6 +85,7 @@ class TextMesajYazma extends StatelessWidget {
     );
   }
 }
+
 class TextYorumYazma extends StatelessWidget {
   TextYorumYazma({
     required this.labelText,
@@ -95,12 +96,15 @@ class TextYorumYazma extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: yorumController,
-      decoration: InputDecoration(
+    return Padding(
+      padding: const EdgeInsets.all(12.0),
+      child: TextFormField(
+
+        controller: yorumController,
+        decoration: InputDecoration(border: InputBorder.none,
           labelText: "$labelText",
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20)))),
+        ),
+      ),
     );
   }
 }
@@ -158,12 +162,18 @@ class NormalText extends StatelessWidget {
     required this.labelText,
     super.key,
   });
+
   String labelText;
+
   @override
   Widget build(BuildContext context) {
-    return  Text(labelText,style: TextStyle(fontSize: 20,fontWeight: FontWeight.bold),);
+    return Text(
+      labelText,
+      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    );
   }
 }
+
 Drawer buildDrawer(BuildContext context) {
   return Drawer(
     child: ListView(
@@ -200,7 +210,8 @@ Drawer buildDrawer(BuildContext context) {
               ),
             );
           },
-        ),ListTile(
+        ),
+        ListTile(
           title: const Text('Arkadaş bul'),
           leading: Icon(Icons.person_add),
           onTap: () {
@@ -236,7 +247,6 @@ Drawer buildDrawer(BuildContext context) {
             Navigator.pop(context);
           },
         ),
-
         ListTile(
           title: const Text('Çıkış Yap'),
           leading: Icon(Icons.login_outlined),

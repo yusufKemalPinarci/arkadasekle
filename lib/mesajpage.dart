@@ -75,8 +75,6 @@ class _MesajPageState extends State<MesajPage> {
 
   void mesajlariGetir() async {
     int sayi = 0;
-
-
     QuerySnapshot querySnapshot =
         await FirebaseFirestore.instance.collection('konusmalar').get();
     List<DocumentSnapshot> documents = querySnapshot.docs;

@@ -35,18 +35,23 @@ dependencies:
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.2
-  image_picker: ^0.8.7
-  image_cropper: ^4.0.1
-  firebase_core: ^2.14.0
-  firebase_auth: ^4.6.3
-  cloud_firestore: ^4.8.1
+
+  image_picker: ^1.0.6
+  image_cropper: ^5.0.1
   firebase_storage: ^11.2.4
   date_time_format: ^2.0.1
+  http: ^1.1.2
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.1.0
+  flutter_bloc: ^8.1.1
+  flutter_blurhash: ^0.8.2
+  shared_preferences: ^2.2.2
+  firebase_auth: ^4.16.0
+  cloud_firestore: ^4.14.0
+  firebaseapis: ^0.2.0
   firebase_messaging: ^14.6.4
-  shared_preferences: ^2.1.2
-  flutter_local_notifications: ^15.0.0
-  http: ^0.13.6
+  flutter_local_notifications: ^16.3.0
+  firebase_core: ^2.24.2
 
 
 dev_dependencies:
@@ -58,7 +63,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -72,9 +77,9 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
+    - assets/json/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
