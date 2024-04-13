@@ -31,7 +31,7 @@ class _UserVideoState extends State<UserVideo> {
 
             if (snapshot.hasError) {
               return Center(
-                child: Text('Error: ${snapshot.error}'),
+                child: Text('Errorr: ${snapshot.error}'),
               );
             }
 
