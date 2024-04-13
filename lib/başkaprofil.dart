@@ -1,5 +1,5 @@
-import 'package:arkadasekle/kayitpage.dart';
-import 'package:arkadasekle/mesajpage.dart';
+
+import 'package:arkadasekle/ui/pages/mesajpage.dart';
 import 'package:arkadasekle/yorumsayfasi.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 
 import 'firebase_service.dart';
 import 'formfield.dart';
+import 'ui/pages/register.dart';
 
 class BaskaProfil extends StatefulWidget {
   String arkadasId;

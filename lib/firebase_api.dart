@@ -1,14 +1,10 @@
 import 'dart:convert';
-
-import 'package:arkadasekle/kayitpage.dart';
-import 'package:arkadasekle/main.dart';
+import 'package:arkadasekle/firebase_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-import 'notification_screen.dart';
+import 'ui/pages/register.dart';
 
 Future<void> handleBackgorundMessage(RemoteMessage message) async {
   print("nula eşit değil");
@@ -44,14 +40,31 @@ class FirebaseApi {
     // initPushNotifications();
   }
 
-  void sendNotification(
-      String recipientToken, String title, String body) async {
-    if (recipientToken.isNotEmpty) {
-      await FirebaseMessaging.instance.sendMessage();
-    } else {
-      // recipientToken boş ise, uygun bir işlem yapabilirsiniz.
-    }
+  void sendNotification(RemoteMessage message) async {
+      try {
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+          print('Got a message whilst in the foreground!');
+          print('Message data: ${message.data}');
+
+          if (message.notification != null) {
+            print('Message also contained a notification: ${message.notification}');
+          }
+        });        // Bildirimi gönder
+        await FirebaseMessaging.instance.sendMessage();
+      } catch (e) {
+        print('Bildirim gönderme hatası: $e');
+        // Hata durumunda uygun bir işlem yapabilirsiniz.
+      }
+
   }
+
+
+
+
+
+
+
+
 
   Future initLocalNotifications() async {
     const android = AndroidInitializationSettings('drawable/ic_launcher');

@@ -2,49 +2,23 @@ import 'package:arkadasekle/akis.dart';
 import 'package:arkadasekle/arkadaslistele.dart';
 import 'package:arkadasekle/kisilerliste.dart';
 import 'package:arkadasekle/mesajmodel.dart';
-import 'package:arkadasekle/profilpage.dart';
+import 'package:arkadasekle/ui/pages/profile_page.dart';
 import 'package:flutter/material.dart';
 
 import 'firebase_service.dart';
 import 'girispage.dart';
 import 'model.dart';
 
-TextEditingController isimController = TextEditingController();
 TextEditingController hakkindaController = TextEditingController();
 TextEditingController mesajController = TextEditingController();
-TextEditingController emailController = TextEditingController();
-TextEditingController sifreController = TextEditingController();
 TextEditingController yorumController = TextEditingController();
-
+TextEditingController isimController = TextEditingController();
+TextEditingController sifreController = TextEditingController();
+TextEditingController emailController = TextEditingController();
 ButtonStyle butonstyle = ElevatedButton.styleFrom(
     minimumSize: Size(100, 50), maximumSize: Size(110, 100));
 
-class TextisimYazma extends StatelessWidget {
-  TextisimYazma({
-    required this.labelText,
-    super.key,
-  });
 
-  String labelText;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      validator: (value) {
-        if (value!.isEmpty) {
-          return "lütfen isminiz giriniz";
-        } else {
-          return null;
-        }
-      },
-      controller: isimController,
-      decoration: InputDecoration(
-          labelText: "$labelText",
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20)))),
-    );
-  }
-}
 
 class TexthakkindaYazma extends StatelessWidget {
   TexthakkindaYazma({
@@ -101,7 +75,8 @@ class TextYorumYazma extends StatelessWidget {
       child: TextFormField(
 
         controller: yorumController,
-        decoration: InputDecoration(border: InputBorder.none,
+        decoration: InputDecoration(border:  OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(20))),
           labelText: "$labelText",
         ),
       ),
@@ -109,53 +84,9 @@ class TextYorumYazma extends StatelessWidget {
   }
 }
 
-class TextEmailYazma extends StatelessWidget {
-  TextEmailYazma({
-    required this.labelText,
-    super.key,
-  });
 
-  String labelText;
 
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      validator: (value) {
-        if (value!.isEmpty) {
-          return "lütfen emailinizi giriniz";
-        } else {
-          return null;
-        }
-      },
-      controller: emailController,
-      decoration: InputDecoration(
-          labelText: "$labelText",
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20)))),
-    );
-  }
-}
 
-class TextSifreYazma extends StatelessWidget {
-  TextSifreYazma({
-    required this.labelText,
-    super.key,
-  });
-
-  String labelText;
-
-  @override
-  Widget build(BuildContext context) {
-    return TextFormField(
-      obscureText: true,
-      controller: sifreController,
-      decoration: InputDecoration(
-          labelText: "$labelText",
-          border: OutlineInputBorder(
-              borderRadius: BorderRadius.all(Radius.circular(20)))),
-    );
-  }
-}
 
 class NormalText extends StatelessWidget {
   NormalText({
@@ -206,7 +137,7 @@ Drawer buildDrawer(BuildContext context) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ProfilPage(),
+                builder: (context) => ProfilePage(isim: '',),
               ),
             );
           },

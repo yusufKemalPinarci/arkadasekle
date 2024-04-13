@@ -1,11 +1,13 @@
-import 'package:arkadasekle/anasayfa2.dart';
+
+import 'package:arkadasekle/firebase_service.dart';
 import 'package:arkadasekle/kisilerliste.dart';
+import 'package:arkadasekle/ui/pages/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'formfield.dart';
-import 'kayitpage.dart';
+
 
 class GirisSayfasi extends StatefulWidget {
   const GirisSayfasi({Key? key}) : super(key: key);
@@ -57,7 +59,7 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
               ElevatedButton(style: butonstyle,
                 onPressed: () {
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => KayitPage()));
+                      MaterialPageRoute(builder: (context) => RegisterScreen()));
                 },
                 child: Text('Kayıt Ol'),
               ),
@@ -86,13 +88,7 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
       }
 
 
-      // Giriş başarılıysa, kullanıcı listeleme sayfasına yönlendir
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Anasayfa2(),
-        ),
-      );
+
     } catch (e) {
       showDialog(
         context: context,

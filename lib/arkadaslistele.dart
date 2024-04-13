@@ -1,11 +1,12 @@
 import 'package:arkadasekle/arkadasistekleri.dart';
-import 'package:arkadasekle/ba%C5%9Fkaprofil.dart';
-import 'package:arkadasekle/formfield.dart';
-import 'package:arkadasekle/kayitpage.dart';
+import 'package:arkadasekle/baska_profile.dart';
+import 'package:arkadasekle/ui/pages/home_page.dart';
+import 'package:arkadasekle/ui/pages/register.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'gonderilenisteksayfasi.dart';
-import 'mesajpage.dart';
+import 'package:provider/provider.dart';
+import 'ui/pages/mesajpage.dart';
 
 class ArkadasListele extends StatefulWidget {
   @override
@@ -82,7 +83,14 @@ class _ArkadasListeleState extends State<ArkadasListele> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: buildDrawer(context),
+        bottomNavigationBar:
+        Consumer<BottomNavBarProvider>(builder: (context, provider, child) {
+          if (provider.showBottomNavBar) {
+            return BottomNavbar();
+          } else {
+            return SizedBox.shrink();
+          }
+        }),
       appBar: AppBar(
         title: Text(
           'Arkadaşlar',
@@ -114,7 +122,11 @@ class _ArkadasListeleState extends State<ArkadasListele> {
         ),
       ],
       ),
-      body: RefreshIndicator(
+      body: arkadaslar.isEmpty
+          ? Center(
+        child: Text('Hiç arkadaşın yok!'),
+      )
+          : RefreshIndicator(
         onRefresh: getArkadasListesi,
         child: ListView.builder(
           itemCount: arkadaslar.length,
@@ -139,9 +151,9 @@ class _ArkadasListeleState extends State<ArkadasListele> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => BaskaProfil(
+                            builder: (context) => BaskaProfile(
                               arkadasId: arkadasId,
-                              ArkadasIsim: arkadasIsim,
+                              isim: arkadasIsim,
                             ),
                           ),
                         );
@@ -200,7 +212,7 @@ class _ArkadasListeleState extends State<ArkadasListele> {
                                         },
                                       );
                                     },
-                                    child: Icon(Icons.remove),
+                                    child: Image.asset(width: 24,height: 24,"assets/images/remove.png"),
                                   ),SizedBox(width: 20)
                                 ],
                               ),

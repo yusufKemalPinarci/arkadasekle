@@ -1,5 +1,6 @@
 import 'dart:io';
-
+import 'package:arkadasekle/deneme5.dart';
+import 'package:arkadasekle/ui/pages/register.dart';
 import 'package:arkadasekle/firebase_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,15 +11,12 @@ import 'package:arkadasekle/app/configs/colors.dart';
 import 'package:arkadasekle/app/configs/theme.dart';
 import 'package:arkadasekle/ui/bloc/gallery_profile_cubit.dart';
 import 'package:image_picker/image_picker.dart';
-
-import '../../girispage.dart';
-import '../../kayitpage.dart';
-
+import 'home_page.dart';
+import 'package:animated_floating_buttons/animated_floating_buttons.dart';
 class ProfilePage extends StatefulWidget {
+  String isim;
 
-
-   String isim;
-   ProfilePage({Key? key,required String this.isim}) : super(key: key);
+  ProfilePage({Key? key, required String this.isim}) : super(key: key);
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -26,13 +24,16 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
 
+
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<dynamic> resimler = [];
   String ProfilResimUrl = "";
   String isim = "";
   bool isLoading = true;
   bool hesapGizli = false;
-  int arkadasSayisi=0;
+  int arkadasSayisi = 0;
+  final GlobalKey<AnimatedFloatingActionButtonState> key =GlobalKey<AnimatedFloatingActionButtonState>();
+
 
   getSnapshotFuture() async {
     DocumentSnapshot userSnapshot =
@@ -44,14 +45,14 @@ class _ProfilePageState extends State<ProfilePage> {
       hesapGizli = userSnapshot["hesapGizli"] ?? false;
     });
   }
+
   getArkadasSayisi() async {
     DocumentSnapshot userSnapshot =
     await _firestore.collection('users').doc(userId).get();
     if (userSnapshot.exists) {
       List arkadaslar = userSnapshot['arkadaslar'];
       setState(() {
-        arkadasSayisi=arkadaslar.length;
-
+        arkadasSayisi = arkadaslar.length;
       });
     } else {
       print('Kullanıcı bulunamadı: $userId');
@@ -66,28 +67,25 @@ class _ProfilePageState extends State<ProfilePage> {
     getArkadasSayisi();
   }
 
-
-
-
   getResimler() async {
     try {
-      DocumentReference userDoc = FirebaseFirestore.instance.collection("users").doc(userId);
+      DocumentReference userDoc =
+      FirebaseFirestore.instance.collection("users").doc(userId);
       DocumentSnapshot userSnapshot = await userDoc.get();
       if (!userSnapshot.exists) {
         print('User document not found');
         return;
       }
       resimler = userSnapshot['resimler'] ?? [];
-
     } catch (e) {
       print('Error getting comments: $e');
     }
   }
 
-
   Future<void> resimEkle(String resimUrl) async {
     try {
-      DocumentReference userDoc = FirebaseFirestore.instance.collection("users").doc(userId);
+      DocumentReference userDoc =
+      FirebaseFirestore.instance.collection("users").doc(userId);
 
       // Get the user document
       DocumentSnapshot userSnapshot = await userDoc.get();
@@ -104,6 +102,7 @@ class _ProfilePageState extends State<ProfilePage> {
       Map<String, dynamic> yeniResim = {
         'url': resimUrl,
         'begenenler': [],
+        'yorumlar': []
       };
 
       // Add the new resim to the user's resimler list
@@ -124,6 +123,46 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> videoEkle(String resimUrl) async {
+    try {
+      DocumentReference userDoc =
+      FirebaseFirestore.instance.collection("users").doc(userId);
+
+      // Get the user document
+      DocumentSnapshot userSnapshot = await userDoc.get();
+
+      if (!userSnapshot.exists) {
+        print('User document not found');
+        return;
+      }
+
+      // Get the user's resimler list
+      List<dynamic> videolar = userSnapshot['videolar'] ?? [];
+
+      // Create a new resim object
+      Map<String, dynamic> yeniVideo = {
+        'url': resimUrl,
+        'begenenler': [],
+        'yorumlar': []
+      };
+
+      // Add the new resim to the user's resimler list
+      videolar.add(yeniVideo);
+
+      // Update Firestore with new data
+      await userDoc.update({
+        'videolar': videolar,
+      });
+
+      // Update local state if necessary
+      setState(() {
+        // Assuming resimler is a list in your widget state
+        videolar.add(yeniVideo);
+      });
+    } catch (e) {
+      print('Error adding image: $e');
+    }
+  }
 
 
   profilResimEkle(String _imageUrl) async {
@@ -142,9 +181,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
     setState(() {});
   }
-
-
-
 
   Future<void> profilResminiGuncelle(String yeniResimUrl) async {
     // Eski resmi al
@@ -165,7 +201,6 @@ class _ProfilePageState extends State<ProfilePage> {
       ProfilResimUrl = yeniResimUrl;
     });
   }
-
 
   void profilResmiSil() async {
     DocumentSnapshot userSnapshot =
@@ -220,7 +255,6 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
@@ -229,12 +263,37 @@ class _ProfilePageState extends State<ProfilePage> {
         statusBarIconBrightness: Brightness.dark,
       ),
     );
-    return Scaffold(floatingActionButton: FloatingActionButton(onPressed: ()async {
-      File _imageFile = await pickImage(ImageSource.camera);
-      String imageUrl = await uploadImage(_imageFile!);
-      resimEkle(imageUrl);
-    },child: Icon(Icons.add),),
+
+    return Scaffold(
+      bottomNavigationBar: BottomNavbar(),
+      floatingActionButton: AnimatedFloatingActionButton(
+        //Fab list
+          fabButtons: <Widget>[
+            FloatingActionButton(
+              onPressed: () async {
+                File _imageFile = await pickVideo(ImageSource.camera);
+                String videoeUrl = await uploadVideo(_imageFile!);
+                videoEkle(videoeUrl);
+              },
+              child: Icon(Icons.video_call),
+            ), FloatingActionButton(
+              onPressed: () async {
+                File _imageFile = await pickImage(ImageSource.camera);
+                String imageUrl = await uploadImage(_imageFile!);
+                resimEkle(imageUrl);
+              },
+              child: Icon(Icons.image),
+            ),
+          ],
+          key: key,
+
+          colorStartAnimation: AppColors.primaryLightColor,
+          colorEndAnimation: AppColors.whiteColor,
+          animatedIconData: AnimatedIcons.menu_close //To principal button
+      ),
       appBar: AppBar(
+        automaticallyImplyLeading: true, // This line removes the back button
+
         backgroundColor: AppColors.whiteColor,
         elevation: 0,
         centerTitle: true,
@@ -253,27 +312,32 @@ class _ProfilePageState extends State<ProfilePage> {
                 onTap: () {
                   RenderBox renderBox = context.findRenderObject() as RenderBox;
                   var offset = renderBox.localToGlobal(Offset.zero);
-                  showMenu(color:AppColors.whiteColor,
+                  showMenu(
+                    color: AppColors.whiteColor,
                     context: context,
                     position: RelativeRect.fromLTRB(offset.dx, offset.dy, 0, 0),
                     items: [
                       PopupMenuItem(
                         child: ListTile(
-                          leading: Icon(color: AppColors.blackTextColor,Icons.exit_to_app),
-                          title: Text(selectionColor:  AppColors.blackTextColor,'Logout'),
-                          onTap: () async{
+                          leading: Icon(
+                              color: AppColors.blackTextColor,
+                              Icons.exit_to_app),
+                          title: Text(
+                              selectionColor: AppColors.blackTextColor,
+                              'Logout'),
+                          onTap: () async {
                             await signOut();
 
-                          Navigator.pop(context);
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => GirisSayfasi(),
-                            ),
-                          );
+                            Navigator.pop(context);
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => RegisterScreen(),
+                              ),
+                            );
 
                             // Handle logout action here
-                            Navigator.pop(context); // Close the menu
+                            // Close the menu
                           },
                         ),
                       ),
@@ -308,14 +372,28 @@ class _ProfilePageState extends State<ProfilePage> {
                     fontSize: 22,
                   ),
                 ),
+
                 const SizedBox(height: 24),
                 _buildDescription(),
                 const SizedBox(height: 24),
-                _buildButtonAction(),
+                Switch(
+                  value: hesapGizli,
+                  onChanged: (value) async {
+                    // Toggle the value of hesapGizli
+                    await _firestore.collection('users').doc(userId).update({
+                      'hesapGizli': value,
+                    });
+                    setState(() {
+                      hesapGizli = value;
+                    });
+                  },
+                ),
+
                 const SizedBox(height: 30),
                 _buildTabBar(),
                 const SizedBox(height: 24),
-                _buildGridList(context),
+                _buildGridList(context)
+
               ],
             ),
           ),
@@ -326,14 +404,16 @@ class _ProfilePageState extends State<ProfilePage> {
 
   BlocProvider<GalleryProfileCubit> _buildGridList(BuildContext context) {
     return BlocProvider(
-      create: (context) => GalleryProfileCubit()..getGalleryProfile(),
+      create: (context) =>
+      GalleryProfileCubit()
+        ..getGalleryProfile(),
       child: BlocBuilder<GalleryProfileCubit, GalleryProfileState>(
         builder: (_, state) {
           if (state is GalleryProfileError) {
             return Center(child: Text(state.message));
           } else if (state is GalleryProfileLoaded) {
-
-            return (resimler.length!=0)?SizedBox(
+            return (resimler.length != 0)
+                ? SizedBox(
               height: 400,
               width: double.infinity,
               child: GridView.count(
@@ -344,87 +424,105 @@ class _ProfilePageState extends State<ProfilePage> {
                 physics: const BouncingScrollPhysics(),
                 children: List.generate(
                   resimler.length,
-                      (index) => Stack(
-                    alignment: Alignment.bottomCenter,
-                    children: [
-                      GestureDetector(onLongPress: (){
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text("Resmi Sil" ,style: AppTheme.greyTextStyle.copyWith(
-                              fontWeight: AppTheme.bold,
-                                fontSize: 22,
-                                color: AppColors.greyTextColor
-                              ),),
-                              content: Text("resmi silmek istediğinize emin misiniz?", style: AppTheme.blackTextStyle.copyWith(
-
-                                fontSize: 12,
-                              ),),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    resmiSil(index);
-                                  },
-                                  child: Text("Sil" ,style: AppTheme.blackTextStyle.copyWith(
-                            fontWeight: AppTheme.bold,
-                            fontSize: 16,
-                                    color: AppColors.purpleColor
-                            ),),
+                      (index) =>
+                      Stack(
+                        alignment: Alignment.bottomCenter,
+                        children: [
+                          GestureDetector(
+                            onLongPress: () {
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text(
+                                      "Sil",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 22,
+                                      ),
+                                    ),
+                                    content: Text(
+                                      "Silmek istediğinize emin misiniz?",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                          resmiSil(index);
+                                        },
+                                        child: Text(
+                                          "Sil",
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                              color: Colors.red),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("İptal",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: Colors.green)),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(24),
+                                image: DecorationImage(
+                                  image: NetworkImage(
+                                    resimler[index]["url"],
+                                  ),
+                                  fit: BoxFit.cover,
                                 ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text("İptal",style: AppTheme.blackTextStyle.copyWith(
-                                      fontWeight: AppTheme.bold,
-                                      fontSize: 16,
-                                      color: AppColors.purpleColor
-                                  )),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-
-                      },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            image: DecorationImage(
-                              image: NetworkImage(
-                                resimler[index]["url"],
                               ),
-                              fit: BoxFit.cover,
+                              child: _isVideo(resimler[index]["url"])
+                                  ? Align(
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  Icons.play_circle_fill,
+                                  color: Colors.white,
+                                  size: 50,
+                                ),
+                              )
+                                  : Container(),
                             ),
                           ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 6,
-                          horizontal: 10,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 12),
-                        decoration: BoxDecoration(
-                          color: AppColors.whiteColor,
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Text(
-                          // You can replace this with your actual like data from the state
-                          resimler[index]["begenenler"].length.toString(),
-                          style: AppTheme.blackTextStyle.copyWith(
-                            fontWeight: AppTheme.bold,
-                            fontSize: 10,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 10,
+                            ),
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Text(
+                              // You can replace this with your actual like data from the state
+                              resimler[index]["begenenler"].length.toString(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
                 ),
               ),
-            ):Container();
+            )
+                : Container();
           } else {
             return const Center(child: CircularProgressIndicator());
           }
@@ -433,9 +531,15 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  bool _isVideo(String url) {
+    // Storage'da dosya adının sonunda ".mp4" varsa true döner
+    return url.toLowerCase().endsWith(".mp4");
+  }
+
 
   Row _buildTabBar() {
-    return Row(mainAxisAlignment: MainAxisAlignment.center,
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           "Photos",
@@ -445,12 +549,24 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ),
         const SizedBox(width: 24),
-        Text(
-          "Video",
-          style: AppTheme.blackTextStyle.copyWith(
-            fontWeight: AppTheme.bold,
-            fontSize: 18,
-            color: AppColors.greyColor,
+        InkWell(onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    UserVideo(
+                        arkadasId: userId.toString()
+                    )
+            ),
+          );
+        },
+          child: Text(
+            "Video",
+            style: AppTheme.blackTextStyle.copyWith(
+              fontWeight: AppTheme.bold,
+              fontSize: 18,
+              color: AppColors.greyColor,
+            ),
           ),
         ),
         const SizedBox(width: 24),
@@ -462,49 +578,10 @@ class _ProfilePageState extends State<ProfilePage> {
             color: AppColors.greyColor,
           ),
         ),
-
-
       ],
     );
   }
 
-
-
-  Row _buildButtonAction() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.greenColor,
-            minimumSize: const Size(120, 45),
-            elevation: 8,
-            shadowColor: AppColors.primaryColor.withOpacity(0.3),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-          child: Text('Follow',
-              style: AppTheme.whiteTextStyle
-                  .copyWith(fontWeight: AppTheme.semiBold)),
-        ),
-        const SizedBox(width: 12),
-        Container(
-          width: 45,
-          height: 45,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.greyColor.withOpacity(0.17),
-            image: const DecorationImage(
-              scale: 2.3,
-              image: AssetImage("assets/images/ic_inbox.png"),
-            ),
-          ),
-        )
-      ],
-    );
-  }
 
   Row _buildDescription() {
     return Row(
@@ -588,79 +665,94 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(60),
-        child: (ProfilResimUrl=="")?Container(
-          width: 32,
-          height: 32,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: AppColors.greyColor.withOpacity(0.17),
-            image: const DecorationImage(
-              scale: 2.3,
-              image: AssetImage("assets/images/ic_profile.png"),
-            ),
-          ),
-        ):InkWell(onTap: (){
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(backgroundColor: AppColors.whiteColor,
-                title: Text("Profil Resmi",style: AppTheme.greyTextStyle.copyWith(
-                  fontWeight: AppTheme.bold,
-                  fontSize: 22,
-                  color:  AppColors.greyTextColor,
-                )),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment:
-                  CrossAxisAlignment.start,
-                  children: [
-                    InkWell(
-                      onTap: () async {
-                        Navigator.of(context).pop();
-                        File _imageFile =
-                        await pickImage(
-                            ImageSource.camera);
-                        String _imageUrl =
-                        await uploadImage(_imageFile);
-                        await profilResminiGuncelle(_imageUrl);
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 8.0),
-                        child: Text(
-                            "Profil Resmini Güncelle", style: AppTheme.blackTextStyle.copyWith(
-                          fontWeight: AppTheme.bold,
-                          fontSize: 16,
-                        ),),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                        profilResmiSil();
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                            vertical: 8.0),
-                        child: Text("Profil Resmini Sil",style: AppTheme.blackTextStyle.copyWith(
-                          fontWeight: AppTheme.bold,
-                          fontSize: 16,
-                        ),),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
+        child: (ProfilResimUrl == "")
+            ? InkWell(onTap: (){
+          ProfilResmiShowDialog();
 
         },
-          child: Image.network(ProfilResimUrl,
-                 width: 120,
+              child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.greyColor.withOpacity(0.17),
+              image: const DecorationImage(
+                scale: 2.3,
+                image: AssetImage("assets/images/ic_profile.png"),
+              ),
+                        ),
+                      ),
+            )
+            : InkWell(
+          onTap: () {
+            ProfilResmiShowDialog();
+          },
+          child: Image.network(
+            ProfilResimUrl,
+            width: 120,
             fit: BoxFit.cover,
           ),
         ),
       ),
+    );
+  }
+
+  void ProfilResmiShowDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppColors.whiteColor,
+          title: Text("Profil Resmi",
+              style: AppTheme.greyTextStyle.copyWith(
+                fontWeight: AppTheme.bold,
+                fontSize: 22,
+                color: AppColors.greyTextColor,
+              )),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InkWell(
+                onTap: () async {
+                  Navigator.of(context).pop();
+                  File _imageFile =
+                  await pickImage(ImageSource.camera);
+                  String _imageUrl =
+                  await uploadImage(_imageFile);
+                  await profilResminiGuncelle(_imageUrl);
+                },
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    "Profil Resmini Güncelle",
+                    style: AppTheme.blackTextStyle.copyWith(
+                      fontWeight: AppTheme.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).pop();
+                  profilResmiSil();
+                },
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8.0),
+                  child: Text(
+                    "Profil Resmini Sil",
+                    style: AppTheme.blackTextStyle.copyWith(
+                      fontWeight: AppTheme.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

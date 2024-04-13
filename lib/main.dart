@@ -1,12 +1,12 @@
-import 'package:arkadasekle/girispage.dart';
+import 'package:arkadasekle/Firebase_mesaj_islemleri.dart';
 import 'package:arkadasekle/ui/pages/home_page.dart';
+import 'package:arkadasekle/ui/pages/register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'akis.dart';
-import 'deneme.dart';
+import 'package:provider/provider.dart';
 import 'firebase_api.dart';
-import 'kayitpage.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 
@@ -19,18 +19,33 @@ void main() async {
     userId = await FirebaseAuth.instance.currentUser!.uid;
     await FirebaseApi().initNotifications();
   }
-
- GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-
-
-  runApp(MyApp(initialRoute: user == null ? '/giris' : '/anasayfa'));
+  GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  runApp(MultiProvider(
+    providers: [
+      ChangeNotifierProvider<BottomNavBarProvider>(
+        create: (BuildContext context) {
+          return BottomNavBarProvider();
+        },
+      ),
+      ChangeNotifierProvider<BottomNavBarProvider2>(
+        create: (BuildContext context) {
+          return BottomNavBarProvider2();
+        },
+      ),
+      ChangeNotifierProvider<SetStateIslemi>(
+        create: (BuildContext context) {
+          return SetStateIslemi();
+        },
+      ),
+    ],
+    child: MyApp(initialRoute: user == null ? '/giris' : '/anasayfa'),
+  ));
 }
 
 class MyApp extends StatelessWidget {
   final String initialRoute;
 
-  const MyApp({ Key? key, required this.initialRoute}) : super(key: key);
+  const MyApp({Key? key, required this.initialRoute}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +53,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
       title: 'Uygulama Adı',
-      theme: ThemeData(
-
-      ),
-
+      theme: ThemeData(),
       initialRoute: initialRoute,
       routes: {
-        '/giris': (context) => GirisSayfasi(),
-        '/anasayfa': (context) => HomePage(),
+        '/giris': (context) => RegisterScreen(),
+        '/anasayfa': (context) => HomePage()
       },
     );
   }

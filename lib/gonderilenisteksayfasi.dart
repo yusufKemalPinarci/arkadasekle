@@ -1,10 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'başkaprofil.dart';
-import 'formfield.dart';
-import 'kayitpage.dart';
-import 'main.dart';
+import 'ui/pages/register.dart';
 
 class GonderilenIstekSayfasi extends StatefulWidget {
   const GonderilenIstekSayfasi({Key? key}) : super(key: key);
@@ -74,7 +71,11 @@ class _GonderilenIstekSayfasiState extends State<GonderilenIstekSayfasi> {
           'Gönderilen İstekler',
         ),
       ),
-      body: RefreshIndicator(
+      body:arkadaslar.isEmpty
+          ? Center(
+        child: Text('Hiç gönderilen istek yok'),
+      )
+          : RefreshIndicator(
         onRefresh: getArkadasIstekListesi,
         child: ListView.builder(
           itemCount: arkadaslar.length,

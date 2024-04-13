@@ -1,10 +1,9 @@
+import 'package:arkadasekle/firebase_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'başkaprofil.dart';
-import 'formfield.dart';
-import 'kayitpage.dart';
-import 'main.dart';
+
+import 'ui/pages/register.dart';
 
 class ArkadasIstekleriSayfasi extends StatefulWidget {
   const ArkadasIstekleriSayfasi({Key? key}) : super(key: key);
@@ -58,7 +57,11 @@ class _ArkadasIstekleriSayfasiState extends State<ArkadasIstekleriSayfasi> {
           'Arkadaş İstekleri',
         ),
       ),
-      body: RefreshIndicator(
+      body: arkadaslar.isEmpty
+          ? Center(
+        child: Text('Hiç arkadaş isteği yok'),
+      )
+          : RefreshIndicator(
         onRefresh: getArkadasIstekListesi,
         child: ListView.builder(
           itemCount: arkadaslar.length,

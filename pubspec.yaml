@@ -36,7 +36,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
 
-  image_picker: ^1.0.6
+  image_picker: ^1.0.7
   image_cropper: ^5.0.1
   firebase_storage: ^11.2.4
   date_time_format: ^2.0.1
@@ -50,10 +50,23 @@ dependencies:
   cloud_firestore: ^4.14.0
   firebaseapis: ^0.2.0
   firebase_messaging: ^14.6.4
-  flutter_local_notifications: ^16.3.0
+  flutter_local_notifications: ^17.0.0
   firebase_core: ^2.24.2
-
-
+  percent_indicator: ^4.2.3
+  dashboard: ^0.0.4
+  push: ^2.1.0
+  video_player: ^2.8.2
+  chewie: ^1.7.4
+  sqlite3_flutter_libs: ^0.5.20
+  image: ^3.3.0
+  flutter_gemini: ^2.0.3
+  googleapis: ^13.1.0
+  googleapis_auth: ^1.5.0
+  sentiment_dart: ^0.0.5
+  cached_network_image: ^3.3.1
+  story: ^1.1.0
+  animated_floating_buttons: ^0.0.2
+  flutter_animated_button: ^2.0.3
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -80,6 +93,9 @@ flutter:
   assets:
     - assets/images/
     - assets/json/
+    - assets/mobilebert.tflite
+    - assets/
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

@@ -27,7 +27,6 @@ class AppTheme {
 
   static final ThemeData lightTheme = ThemeData(
     primaryColor: AppColors.primaryColor,
-    backgroundColor: AppColors.whiteColor,
     scaffoldBackgroundColor: AppColors.whiteColor,
     navigationBarTheme: const NavigationBarThemeData(
       // indicatorColor: AppColors.backgroundColor,
