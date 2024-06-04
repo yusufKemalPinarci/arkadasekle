@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sentiment_dart/sentiment_dart.dart';
 import 'package:arkadasekle/kisilerliste.dart';
@@ -99,17 +100,30 @@ getUserName(String yazanId) async {
   }
 }
 
+getAciklama(String yazanId) async {
+  try {
+    final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+    DocumentSnapshot userSnapshot =
+    await _firestore.collection('users').doc(yazanId).get();
+    profilResmi = userSnapshot['imageUrl'] ?? '';
+    return userSnapshot["isim"];
+  } catch (e) {
+    print('Error getting user name: $e');
+    return '';
+  }
+}
+
 String getEmotion(double score) {
   if (score < -5) {
-    return "Çok Kötü";
+    return "😢 Çok Kötü";
   } else if (score < 0) {
-    return "Kötü";
+    return "☹️ Kötü";
   } else if (score < 3) {
-    return "Orta";
+    return "😐 Orta";
   } else if (score < 6) {
-    return "İyi";
+    return "😊 İyi";
   } else {
-    return "Çok İyi";
+    return "😃 Çok İyi";
   }
 }
 
@@ -121,10 +135,8 @@ Future<void> yorumEkle(
   try {
     DocumentReference userDocRef =
         FirebaseFirestore.instance.collection('users').doc(ownerId);
-
     // Belirli kullanıcının dokümanını al
     DocumentSnapshot userSnapshot = await userDocRef.get();
-
     if (userSnapshot.exists) {
       // Resimler listesini al
       List<dynamic> resimler = userSnapshot['resimler'] ?? [];
@@ -234,9 +246,6 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-
-
-
     return SafeArea(
       child: Scaffold(
           body: Column(
@@ -320,7 +329,7 @@ class _HomePageState extends State<HomePage> {
                                           decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               color: AppColors.primaryLightColor
-                            
+
                                           ),
                                         ),
                                       ),
@@ -335,7 +344,7 @@ class _HomePageState extends State<HomePage> {
                                           decoration: BoxDecoration(
                                               shape: BoxShape.circle,
                                               image: DecorationImage(image: NetworkImage(userData["imageUrl"]))
-                            
+
                                           ),
                                         ),
                                       ),
@@ -392,6 +401,10 @@ class _HomePageState extends State<HomePage> {
                               bool isLiked =
                                   resimler[i]["begenenler"].contains(userId);
                               String imageeUrl = resimler[i]["url"];
+                              String aciklama= "";
+                              if (resimler[i].containsKey("aciklama")) { // "aciklama" anahtarı var mı kontrolü
+                                 aciklama = resimler[i]["aciklama"];
+                              }
                               if (imageeUrl != null && imageeUrl.isNotEmpty) {
                                 userWidgets.add(SingleChildScrollView(
                                   child: Stack(children: [
@@ -401,7 +414,7 @@ class _HomePageState extends State<HomePage> {
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(30),
                                         child:
-                                            Image.network(resimler[i]["url"]),
+                                            Container(width: double.infinity,child: Image.network(fit: BoxFit.cover,imageeUrl)),
                                       ),
                                     ),
                                     Positioned(
@@ -717,7 +730,7 @@ class _HomePageState extends State<HomePage> {
                                       bottom: 10, // Adjust this value as needed
                                       left: 10, // Adjust this value as needed
                                       child: buildItemPublisher(
-                                          context, ProfilUrl, isim),
+                                          context, ProfilUrl, isim,aciklama),
                                     ),
                                   ]),
                                 ));
@@ -1149,108 +1162,10 @@ _buildItemBottomNavBar(
     return Container();
 }
 
-_buildBackgroundGradient() => Container(
-      width: double.infinity,
-      height: 150,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [
-          AppColors.whiteColor.withOpacity(0),
-          AppColors.whiteColor.withOpacity(0.8),
-        ], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-      ),
-    );
 
-CustomAppBar _buildCustomAppBar(BuildContext context) {
-  return CustomAppBar(
-    child: Row(
-      children: [
-        const SizedBox(width: 8),
-        Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.blackColor.withOpacity(0.2),
-                blurRadius: 35,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Image.asset(
-            'assets/images/ic_logo.png',
-            width: 40,
-            height: 40,
-          ),
-        ),
-        const SizedBox(width: 12),
-        InkWell(
-          onTap: () {
-            Navigator.pushReplacement(
-              navigatorKey.currentContext as BuildContext,
-              MaterialPageRoute(
-                builder: (context) => HomePage(),
-              ),
-            );
-          },
-          child: Image.asset("assets/images/ic_notification.png",
-              width: 24, height: 24),
-        ),
-        const SizedBox(width: 12),
-        Image.asset("assets/images/ic_search.png", width: 24, height: 24),
-        const Spacer(),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(35),
-            color: AppColors.backgroundColor,
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 32,
-                height: 32,
-                child: Icon(
-                  Icons.person_add,
-                  color: AppColors.blackColor,
-                ),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.whiteColor,
-                    width: 1,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.blackColor.withOpacity(0.1),
-                      blurRadius: 10,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                "Sajon.co",
-                style: AppTheme.blackTextStyle
-                    .copyWith(fontWeight: AppTheme.bold, fontSize: 12),
-              ),
-              const SizedBox(width: 2),
-              Image.asset(
-                "assets/images/ic_checklist.png",
-                width: 16,
-              ),
-              const SizedBox(width: 4),
-            ],
-          ),
-        )
-      ],
-    ),
-  );
-}
 
 Container buildItemPublisher(
-    BuildContext context, String profilUrl, String isim) {
+    BuildContext context, String profilUrl, String isim,String aciklama) {
   return Container(
     padding: const EdgeInsets.only(left: 18, right: 40, bottom: 24),
     child: Column(
@@ -1294,18 +1209,18 @@ Container buildItemPublisher(
           ),
         ),
         const SizedBox(height: 12),
-        Text(
-          "çok iyi birisi",
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: AppTheme.whiteTextStyle.copyWith(
-            fontSize: 12,
+        Text(softWrap: true,
+          overflow:TextOverflow.ellipsis,
+          aciklama,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
             fontWeight: AppTheme.regular,
           ),
         ),
         const SizedBox(height: 2),
         Text(
-          "#cokiyibirkisi",
+          "#yeniGönderi",
           style: AppTheme.whiteTextStyle.copyWith(
             color: AppColors.greenColor,
             fontSize: 12,
@@ -1322,6 +1237,7 @@ Align buildImageGradient() {
     alignment: Alignment.bottomCenter,
     child: Container(
       height: 230,
+
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
         gradient: LinearGradient(
@@ -1338,32 +1254,3 @@ Align buildImageGradient() {
   );
 }
 
-Widget _buildImageCover(String url) {
-  return ClipRRect(
-    borderRadius: BorderRadius.circular(30),
-    child: Stack(children: [
-      Image.network(
-        url,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        loadingBuilder: (_, child, ImageChunkEvent? loadingProgress) {
-          if (loadingProgress == null) return child;
-          return Center(
-            child: SizedBox(
-              height: 55,
-              width: 55,
-              child: CircularProgressIndicator(
-                color: Colors.white.withOpacity(0.8),
-                strokeWidth: 1.2,
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            ),
-          );
-        },
-      )
-    ]),
-  );
-}

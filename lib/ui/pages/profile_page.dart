@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:arkadasekle/deneme5.dart';
 import 'package:arkadasekle/ui/pages/register.dart';
 import 'package:arkadasekle/firebase_service.dart';
+import 'package:arkadasekle/ui/pages/resim_ekle_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -13,18 +14,19 @@ import 'package:arkadasekle/ui/bloc/gallery_profile_cubit.dart';
 import 'package:image_picker/image_picker.dart';
 import 'home_page.dart';
 import 'package:animated_floating_buttons/animated_floating_buttons.dart';
+
+
+
+
+
 class ProfilePage extends StatefulWidget {
   String isim;
-
   ProfilePage({Key? key, required String this.isim}) : super(key: key);
-
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-
-
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<dynamic> resimler = [];
   String ProfilResimUrl = "";
@@ -82,46 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  Future<void> resimEkle(String resimUrl) async {
-    try {
-      DocumentReference userDoc =
-      FirebaseFirestore.instance.collection("users").doc(userId);
 
-      // Get the user document
-      DocumentSnapshot userSnapshot = await userDoc.get();
-
-      if (!userSnapshot.exists) {
-        print('User document not found');
-        return;
-      }
-
-      // Get the user's resimler list
-      List<dynamic> resimler = userSnapshot['resimler'] ?? [];
-
-      // Create a new resim object
-      Map<String, dynamic> yeniResim = {
-        'url': resimUrl,
-        'begenenler': [],
-        'yorumlar': []
-      };
-
-      // Add the new resim to the user's resimler list
-      resimler.add(yeniResim);
-
-      // Update Firestore with new data
-      await userDoc.update({
-        'resimler': resimler,
-      });
-
-      // Update local state if necessary
-      setState(() {
-        // Assuming resimler is a list in your widget state
-        resimler.add(yeniResim);
-      });
-    } catch (e) {
-      print('Error adding image: $e');
-    }
-  }
 
   Future<void> videoEkle(String resimUrl) async {
     try {
@@ -233,7 +196,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (userSnapshot.exists) {
       List<dynamic> resimler = userSnapshot['resimler'] ?? [];
       if (index >= 0 && index < resimler.length) {
-        String resimUrl = resimler[index];
+        String resimUrl = resimler[index]['url'];
         resimler.removeAt(index);
 
         // Firestore'dan resmi sil
@@ -271,22 +234,23 @@ class _ProfilePageState extends State<ProfilePage> {
           fabButtons: <Widget>[
             FloatingActionButton(
               onPressed: () async {
-                File _imageFile = await pickVideo(ImageSource.camera);
+                File _imageFile = await pickVideo(ImageSource.gallery);
                 String videoeUrl = await uploadVideo(_imageFile!);
                 videoEkle(videoeUrl);
               },
               child: Icon(Icons.video_call),
             ), FloatingActionButton(
               onPressed: () async {
-                File _imageFile = await pickImage(ImageSource.camera);
+                File _imageFile = await pickImage(ImageSource.gallery);
                 String imageUrl = await uploadImage(_imageFile!);
-                resimEkle(imageUrl);
+                Navigator.push(context, MaterialPageRoute(builder: (context)=>ResimEklePage(imageUrl)));
+
+
               },
               child: Icon(Icons.image),
             ),
           ],
           key: key,
-
           colorStartAnimation: AppColors.primaryLightColor,
           colorEndAnimation: AppColors.whiteColor,
           animatedIconData: AnimatedIcons.menu_close //To principal button
@@ -717,7 +681,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 onTap: () async {
                   Navigator.of(context).pop();
                   File _imageFile =
-                  await pickImage(ImageSource.camera);
+                  await pickImage(ImageSource.gallery);
                   String _imageUrl =
                   await uploadImage(_imageFile);
                   await profilResminiGuncelle(_imageUrl);

@@ -19,24 +19,21 @@ class MesajPage extends StatefulWidget {
   State<MesajPage> createState() => _MesajPageState();
 }
 
-
 late CollectionReference _ref;
 late CollectionReference _ref_users;
-double duyguDurumu = 2;
+
 class _MesajPageState extends State<MesajPage> {
   TextEditingController mesajController = TextEditingController();
   String documanId = "";
-  double toplam=0;
-  int mesajSayisi=1;
-
-
-
+  double toplam = 0;
+  int mesajSayisi = 0;
+  double ortalamaDuyguDurumu = 0;
 
   @override
   void initState() {
     super.initState();
-    _ref  = FirebaseFirestore.instance.collection('konusmalar');
-    _ref_users=FirebaseFirestore.instance.collection("users");
+    _ref = FirebaseFirestore.instance.collection('konusmalar');
+    _ref_users = FirebaseFirestore.instance.collection("users");
     mesajlariGetir();
     markAsRead();
   }
@@ -52,126 +49,105 @@ class _MesajPageState extends State<MesajPage> {
     DocumentSnapshot kullaniciDokumani = await _ref_users.doc(widget.arkadasId).get();
     DocumentSnapshot bizimDokuman = await _ref_users.doc(userId).get();
 
-    print("karşı tarafın tokeni:"+kullaniciDokumani.get("token"));
+    print("karşı tarafın tokeni:" + kullaniciDokumani.get("token"));
     RemoteMessage message = RemoteMessage(
       data: {
         'title': "mesaj geldi",
-        'body': mesajController,
+        'body': mesajController.text,
       },
-
       from: bizimDokuman.get("token"),
     );
 
     FirebaseApi().sendNotification(message);
 
-
     mesajController.text = "";
   }
 
   void markAsRead() async {
-
+    // Add logic to mark messages as read
   }
 
- void scoreHesapla(double score){
-    toplam+=score;
+  void scoreHesapla(double score) {
+    toplam += score;
     mesajSayisi += 1;
-   print(mesajSayisi);
-  }
-
-
-  double duyguDurumuSonuc(){
-    double sonuc =toplam/mesajSayisi;
-    return sonuc;
+    ortalamaDuyguDurumu = toplam / mesajSayisi;
   }
 
   void mesajlariGetir() async {
     int sayi = 0;
-    QuerySnapshot querySnapshot =
-    await FirebaseFirestore.instance.collection('konusmalar').get();
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('konusmalar').get();
     List<DocumentSnapshot> documents = querySnapshot.docs;
 
     for (var document in documents) {
       List<dynamic> uyeListesi = document['uyeler'];
-      if (uyeListesi.contains(widget.arkadasId) &&
-          uyeListesi.contains(userId)) {
+      if (uyeListesi.contains(widget.arkadasId) && uyeListesi.contains(userId)) {
         sayi++;
         documanId = document.id;
-        print("sayi");
       }
     }
+
     if (sayi > 0) {
-      print("önceden konuşulmuş");
-      _ref = await FirebaseFirestore.instance
-          .collection('konusmalar')
-          .doc(documanId)
-          .collection("mesajlar");
+      _ref = FirebaseFirestore.instance.collection('konusmalar').doc(documanId).collection("mesajlar");
+      QuerySnapshot querySnapshot = await _ref.get();
 
-      QuerySnapshot querySnapshot =
-      await FirebaseFirestore.instance.collection("konusmalar").doc(documanId).collection("mesajlar").where("senderId",isNotEqualTo: userId).where("okundu",isEqualTo: false).get();
-      print(querySnapshot.docs.length);
-
-      if (querySnapshot.docs.length > 0) {
+      if (querySnapshot.docs.isNotEmpty) {
         List<DocumentSnapshot> documents = querySnapshot.docs;
-print(documents.length);
-        for (var document in documents) {
-          print("hey gidi");
-          print(document["message"]);
 
+        for (var document in documents) {
+          double puan = Sentiment.analysis(document['mesaj'], languageCode: 'en').score;
+          scoreHesapla(puan);
           document.reference.update({'okundu': true});
-          print("true yapılcı");
         }
       }
 
-
-      setState(
-              () {}); // _ref değiştiğinde yeniden render etmek için setState kullanılıyor
+      setState(() {});
     } else {
-      print("önceden konuşulmamış");
-      DocumentReference yeniBelgeRef =
-      await FirebaseFirestore.instance.collection("konusmalar").add({
+      DocumentReference yeniBelgeRef = await FirebaseFirestore.instance.collection("konusmalar").add({
         "uyeler": [userId, widget.arkadasId]
       });
       String yeniBelgeId = yeniBelgeRef.id;
-      _ref = FirebaseFirestore.instance
-          .collection('konusmalar')
-          .doc(yeniBelgeId)
-          .collection("mesajlar");
+      _ref = FirebaseFirestore.instance.collection('konusmalar').doc(yeniBelgeId).collection("mesajlar");
 
-      setState(
-              () {}); // _ref değiştiğinde yeniden render etmek için setState kullanılıyor
+      setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    double ortalamaDuyguDurumu = duyguDurumuSonuc();
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.ArkadasIsim),actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 14),
-          child: EmotionBar(score: 3, maxWidth: 150),
-        ), // Duygu değerini ve maksimum genişliği belirtin
-      ],
+        title: Text(widget.ArkadasIsim),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 14),
+            child: EmotionBar(score: ortalamaDuyguDurumu, maxWidth: 150),
+          ),
+        ],
       ),
       body: Column(
         children: [
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _ref.orderBy('timestamp', descending: false).snapshots(),
-              builder: (BuildContext context,
-                  AsyncSnapshot<QuerySnapshot> snapshot) {
+              builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
                 if (snapshot.hasData) {
                   return ListView.builder(
                     reverse: true,
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (BuildContext context, int index) {
-                      final reversedIndex =
-                          snapshot.data!.docs.length - 1 - index;
+                      final reversedIndex = snapshot.data!.docs.length - 1 - index;
                       final document = snapshot.data!.docs[reversedIndex];
                       DateTime datetime = document["timestamp"].toDate();
                       double puan = Sentiment.analysis(document['mesaj'], languageCode: 'en').score;
-                      print(snapshot.data!.docs.length);
+
+                      if (userId != document['senderId']) {
+                        scoreHesapla(puan);
+                      }
+
+                      Color tarihColor = AppColors.greyColor;
+                      if (userId == document['senderId']) {
+                        tarihColor = AppColors.primaryLightColor;
+                      }
 
                       return ListTile(
                         title: Align(
@@ -180,9 +156,10 @@ print(documents.length);
                               : Alignment.centerLeft,
                           child: IntrinsicWidth(
                             child: Container(
-
                               decoration: BoxDecoration(
-                                color: userId == document['senderId']?AppColors.greyColor:AppColors.primaryLightColor,
+                                color: userId == document['senderId']
+                                    ? AppColors.greyColor
+                                    : AppColors.primaryLightColor,
                                 borderRadius: BorderRadius.horizontal(
                                   left: Radius.circular(10),
                                   right: Radius.circular(10),
@@ -201,11 +178,8 @@ print(documents.length);
                                   children: [
                                     InkWell(
                                       onLongPress: () {
-                                        print(document['mesaj']);
                                         double puan = Sentiment.analysis(document['mesaj'], languageCode: 'en').score;
-                                       scoreHesapla(puan);
-
-                                        String yorumAnaliz= getEmotion(puan);
+                                        String yorumAnaliz = getEmotion(puan);
                                         showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
@@ -230,11 +204,9 @@ print(documents.length);
                                     Align(
                                       alignment: Alignment.bottomRight,
                                       child: Text(
-                                        datetime.hour.toString() +
-                                            ":" +
-                                            datetime.minute.toString(),
+                                        '${datetime.hour}:${datetime.minute}',
                                         style: TextStyle(
-                                          color: AppColors.greyColor,
+                                          color: tarihColor,
                                           fontSize: 15,
                                         ),
                                       ),
@@ -261,7 +233,7 @@ print(documents.length);
             padding: EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color:AppColors.greyColor,
+              color: AppColors.greyColor,
             ),
             child: Row(
               children: [
@@ -275,13 +247,11 @@ print(documents.length);
                   ),
                 ),
                 IconButton(
-                  onPressed: () async{
+                  onPressed: () async {
                     mesajEkle();
-
-
                   },
                   icon: Icon(Icons.send),
-                )
+                ),
               ],
             ),
           ),
